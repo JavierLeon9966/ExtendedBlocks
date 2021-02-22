@@ -44,7 +44,7 @@ class ItemFactory extends PMFactory{
         if(Item::isCreativeItem($item)) return;
         $creativeItems = json_decode(file_get_contents(RESOURCE_PATH ."vanilla" . DIRECTORY_SEPARATOR . "creativeitems.json"), true);
         foreach($creativeItems as $i => $d){
-            if(Item::jsonDeserialize($d)->equals($item, !$item instanceof Durable)){
+            if(self::jsonDeserialize($d)->equals($item, !$item instanceof Durable)){
                 $items = Item::getCreativeItems();
                 $items[$i] = $item;
                 $creative = new \ReflectionProperty(Item::class, 'creative');
@@ -53,17 +53,6 @@ class ItemFactory extends PMFactory{
                 break;
             }
         }
-    }
-    public static function initCreativeItems(): void{
-        Item::clearCreativeItems();
-
-		$creativeItems = json_decode(file_get_contents(RESOURCE_PATH . "vanilla". DIRECTORY_SEPARATOR . "creativeitems.json"), true);
-
-		foreach($creativeItems as $data){
-			$item = self::jsonDeserialize($data);
-			if($item->getVanillaName() == 'Unknown') continue;
-			Item::addCreativeItem($item);
-		}
     }
     final private static function jsonDeserialize(array $data) : Item{
 		$nbt = "";
