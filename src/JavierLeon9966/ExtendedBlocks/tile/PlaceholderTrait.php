@@ -1,4 +1,4 @@
-
+<?php
 declare(strict_types = 1);
 namespace JavierLeon9966\ExtendedBlocks\tile;
 use pocketmine\block\BlockFactory;
