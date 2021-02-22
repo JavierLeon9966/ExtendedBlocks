@@ -73,7 +73,7 @@ class Main extends PluginBase implements Listener{
         $player = $event->getPlayer();
         $level = $player->getLevel();
         
-        }elseif($packet instanceof LevelChunkPacket){
+        if($packet instanceof LevelChunkPacket){
             Main::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($packet, $player, $level): void{
                 try{
                     $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
