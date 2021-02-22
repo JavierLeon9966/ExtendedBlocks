@@ -1,0 +1,6 @@
+name: ExtendedBlocks
+version: 1.0.0
+api: [3.0.0]
+description: Implements the ability to register 255+ ids blocks
+author: Javier Leon9966
+main: JavierLeon9966\ExtendedBlocks\Main
