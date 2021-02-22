@@ -1,7 +1,7 @@
 --- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/JavierLeon9966/ExtendedBlocks
 build-by-default: true
 branches:
-- main
+- stable
 projects:
   ExtendedBlocks:
     path: ""
