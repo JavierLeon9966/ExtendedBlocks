@@ -62,7 +62,7 @@ class Main extends PluginBase implements Listener{
             ItemFactory::initCreativeItems();
             $this->getLogger()->info('Successfully added items/blocks into inventory.');
         }), 100);
-        $this->getServer->getPluginManager()->registerEvents($this, $this);
+        $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
     /**
      * @priority MONITOR
