@@ -47,7 +47,7 @@ class ItemFactory extends PMFactory{
             if(Item::jsonDeserialize($d)->equals($item, !$item instanceof Durable)){
                 $items = Item::getCreativeItems();
                 $items[$i] = $item;
-                $creative = new \ReflectionMethod(Item::class, 'creative');
+                $creative = new \ReflectionProperty(Item::class, 'creative');
                 $creative->setAccessible(true);
                 $creative->setValue($items);
                 break;
