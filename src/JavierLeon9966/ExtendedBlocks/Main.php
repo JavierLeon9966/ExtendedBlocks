@@ -44,7 +44,7 @@ class Main extends PluginBase implements Listener{
             /** @see RuntimeBlockMapping::registerMapping() */
             $registerMapping = new \ReflectionMethod(RuntimeBlockMapping::class, 'registerMapping');
             $registerMapping->setAccessible(true);
-            $registerMapping->invoke($runtimeId, $legacyId, $meta);
+            $registerMapping->invoke(null, $runtimeId, $legacyId, $meta);
         }
         
     }
