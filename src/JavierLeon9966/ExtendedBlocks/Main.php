@@ -9,12 +9,12 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, MovePlayerPacket, NetworkChunkPublisherUpdatePacket};
+use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, BatchPacket, PacketPool};
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
 use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder};
 use JavierLeon9966\ExtendedBlocks\item\ItemFactory;
-use JavierLeon9966\ExtendedBlocks\tile\{Placeholder as PTile, PlaceholderInterface};
+use JavierLeon9966\ExtendedBlocks\tile\Placeholder as PTile;
 class Main extends PluginBase implements Listener{
     use SingletonTrait;
     private static $registered = false;
@@ -57,11 +57,6 @@ class Main extends PluginBase implements Listener{
         ItemFactory::init();
     }
     public function onEnable(){
-        $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function(): void{
-            //Waiting 5 seconds to allow any plugins to register their items
-            ItemFactory::initCreativeItems();
-            $this->getLogger()->info('Successfully added items/blocks into inventory.');
-        }), 100);
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
     /**
@@ -74,39 +69,44 @@ class Main extends PluginBase implements Listener{
         $level = $player->getLevel();
         
         if($packet instanceof LevelChunkPacket){
-            Main::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($packet, $player, $level): void{
-                try{
-                    $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
-                        return $placeholder->getBlock();
-                    }, array_filter($level->getChunkTiles($packet->getChunkX(), $packet->getChunkZ()), static function(Tile $tile): bool{
-                        return $tile instanceof PlaceholderInterface and $tile->getBlock(true)->isValid() and $tile->getBlock() instanceof Placeholder;
-                    })), UpdateBlockPacket::FLAG_ALL_PRIORITY);
-                }catch(\Throwable $_){
-                    //No extended blocks found
+            $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($packet, $player, $level): void{
+                $blocks = [];
+                for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
+                    for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
+                        for($y = 0; $y <= $level->getWorldHeight(); ++$y){
+                            $block = $level->getBlockAt($x, $y, $z);
+                            if($block instanceof Placeholder){
+                                $blocks[] = $block;
+                            }
+                        }
+                    }
+                }
+                if(count($blocks) > 0){
+                    $level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);
                 }
             }), intdiv($player->getPing(), 50) +1);
-        }elseif($packet instanceof NetworkChunkPublisherUpdatePacket){
-            try{
-                $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
-                    return $placeholder->getBlock();
-                }, array_filter($level->getTiles(), static function(Tile $tile) use($player, $level): bool{
-                    return in_array($player, $level->getViewersForPosition($tile), true) and $tile instanceof PlaceholderInterface and $tile->getBlock(true)->isValid() and $tile->getBlock() instanceof Placeholder;
-                })), UpdateBlockPacket::FLAG_ALL_PRIORITY);
-            }catch(\Throwable $_){
-                //No extended blocks found
+        }elseif($packet instanceof BatchPacket){
+            foreach($packet->getPackets() as $buf){
+                $pk = PacketPool::getPacket($buf);
+                if($pk instanceof LevelChunkPacket){
+                    $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
+                        $blocks = [];
+                        for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
+                            for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
+                                for($y = 0; $y <= $level->getWorldHeight(); ++$y){
+                                    $block = $level->getBlockAt($x, $y, $z);
+                                    if($block instanceof Placeholder){
+                                        $blocks[] = $block;
+                                    }
+                                }
+                            }
+                        }
+                        if(count($blocks) > 0){
+                            $level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);
+                        }
+                    }), intdiv($player->getPing(), 50) +1);
+                }
             }
-        }elseif($packet instanceof MovePlayerPacket){
-            Main::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($level, $player): void{
-                try{
-                    $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
-                        return $placeholder->getBlock();
-                    }, array_filter($level->getTiles(), static function(Tile $tile) use($player, $level): bool{
-                        return in_array($player, $level->getViewersForPosition($tile), true) and $tile instanceof PlaceholderInterface and $tile->getBlock(true)->isValid() and $tile->getBlock() instanceof Placeholder;
-                    })), UpdateBlockPacket::FLAG_ALL_PRIORITY);
-                }catch(\Throwable $_){
-                    //No extended blocks found
-                }
-            }), intdiv($player->getPing(), 50) +1);
         }
     }
 }
