@@ -74,7 +74,7 @@ class Main extends PluginBase implements Listener{
                 for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
                     for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
                         for($y = 0; $y <= $level->getWorldHeight(); ++$y){
-                            $block = $level->getBlockAt($x, $y, $z);
+                            $block = $level->getBlockAt($x, $y, $z, true, false);
                             if($block instanceof Placeholder){
                                 $blocks[] = $block;
                             }
@@ -94,7 +94,7 @@ class Main extends PluginBase implements Listener{
                         for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
                             for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
                                 for($y = 0; $y <= $level->getWorldHeight(); ++$y){
-                                    $block = $level->getBlockAt($x, $y, $z);
+                                    $block = $level->getBlockAt($x, $y, $z, true, false);
                                     if($block instanceof Placeholder){
                                         $blocks[] = $block;
                                     }
