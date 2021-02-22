@@ -57,12 +57,12 @@ class Main extends PluginBase implements Listener{
         ItemFactory::init();
     }
     public function onEnable(){
-        $this->getServer()->getScheduler()->scheduleDelayedTask(new ClosureTask(function(): void{
+        $this->getScheduler()->scheduleDelayedTask(new ClosureTask(function(): void{
             //Waiting 5 seconds to allow any plugins to register their items
             ItemFactory::initCreativeItems();
             $this->getLogger()->info('Successfully added items/blocks into inventory.');
         }), 100);
-        $this->getPluginManager()->registerEvents($this, $this);
+        $this->getServer->getPluginManager()->registerEvents($this, $this);
     }
     /**
      * @priority MONITOR
