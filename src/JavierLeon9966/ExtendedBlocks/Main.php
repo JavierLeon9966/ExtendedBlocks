@@ -12,9 +12,9 @@ use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, MovePlayerPacket, NetworkChunkPublisherUpdatePacket};
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
-use JavierLeon9966\ExtendedBlocks\block\BlockFactory;
+use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder};
 use JavierLeon9966\ExtendedBlocks\item\ItemFactory;
-use JavierLeon9966\ExtendedBlocks\tile\Placeholder;
+use JavierLeon9966\ExtendedBlocks\tile\{Placeholder as PTile, PlaceholderInterface};
 class Main extends PluginBase implements Listener{
     use SingletonTrait;
     private static $registered = false;
@@ -52,7 +52,7 @@ class Main extends PluginBase implements Listener{
         self::setInstance($this);
         
         self::registerRuntimeIds();
-        Tile::registerTile(Placeholder::class);
+        Tile::registerTile(PTile::class);
         BlockFactory::init();
         ItemFactory::init();
     }
@@ -89,7 +89,7 @@ class Main extends PluginBase implements Listener{
             try{
                 $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
                     return $placeholder->getBlock();
-                }, array_filter($level->getTiles(), static function(Tile $tile): bool{
+                }, array_filter($level->getTiles(), static function(Tile $tile) use($player, $level): bool{
                     return in_array($player, $level->getViewersForPosition($tile), true) and $tile instanceof PlaceholderInterface and $tile->getBlock(true)->isValid() and $tile->getBlock() instanceof Placeholder;
                 })), UpdateBlockPacket::FLAG_ALL_PRIORITY);
             }catch(\Throwable $_){
@@ -100,7 +100,7 @@ class Main extends PluginBase implements Listener{
                 try{
                     $level->sendBlocks([$player], array_map(static function(PlaceholderInterface $placeholder): Placeholder{
                         return $placeholder->getBlock();
-                    }, array_filter($level->getTiles(), static function(Tile $tile): bool{
+                    }, array_filter($level->getTiles(), static function(Tile $tile) use($player, $level): bool{
                         return in_array($player, $level->getViewersForPosition($tile), true) and $tile instanceof PlaceholderInterface and $tile->getBlock(true)->isValid() and $tile->getBlock() instanceof Placeholder;
                     })), UpdateBlockPacket::FLAG_ALL_PRIORITY);
                 }catch(\Throwable $_){
