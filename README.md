@@ -12,3 +12,8 @@ For now you would need to use another plugin that register the blocks itself.
 For the blocks to be able to register correctly you must add `use JavierLeon9966\ExtendedBlocks\block\PlaceholderTrait;` in the block class.
 
 Soon I'll be able to add blocks in a config. But for now it's just like a API plugin.
+
+# How can I register blocks?
+It's recommended to use this method when the plugin starts loading (`onLoad`).
+
+`JavierLeon9966\ExtendedBlocks\block\BlockFactory::registerBlock($block)`
