@@ -17,3 +17,17 @@ Soon I'll be able to add blocks in a config. But for now it's just like a API pl
 It's recommended to use this method when the plugin starts loading (`onLoad`).
 
 `JavierLeon9966\ExtendedBlocks\block\BlockFactory::registerBlock($block)`
+
+# My block changes to another one
+That could happen if you made the class of the block wrong, this is the correct way:
+
+```php
+class Sample extends Block{
+  use PlaceholderTrait;
+  protected $id = 526; //The id of the block
+  public function __construct(int $meta = 0){
+    $this->meta = $meta;
+  }
+  ...
+}
+```
