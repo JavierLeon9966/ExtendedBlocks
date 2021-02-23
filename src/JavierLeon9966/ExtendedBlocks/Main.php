@@ -71,8 +71,8 @@ class Main extends PluginBase implements Listener{
         if($packet instanceof LevelChunkPacket){
             $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($packet, $player, $level): void{
                 $blocks = [];
-                for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
-                    for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
+                for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$x){
+                    for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ() + 1) << 4; ++$z){
                         for($y = 0; $y <= $level->getWorldHeight(); ++$y){
                             $block = $level->getBlockAt($x, $y, $z, true, false);
                             if($block instanceof Placeholder){
@@ -91,8 +91,8 @@ class Main extends PluginBase implements Listener{
                 if($pk instanceof LevelChunkPacket){
                     $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
                         $blocks = [];
-                        for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$i){
-                            for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ + 1) << 4; ++$i){
+                        for($x = $pk->getChunkX() << 4; $x < ($pk->getChunkX() + 1) << 4; ++$x){
+                            for($z = $pk->getChunkZ() << 4; $z < ($pk->getChunkZ() + 1) << 4; ++$z){
                                 for($y = 0; $y <= $level->getWorldHeight(); ++$y){
                                     $block = $level->getBlockAt($x, $y, $z, true, false);
                                     if($block instanceof Placeholder){
