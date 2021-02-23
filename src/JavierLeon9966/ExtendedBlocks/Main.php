@@ -67,32 +67,14 @@ class Main extends PluginBase implements Listener{
         $packet = $event->getPacket();
         $player = $event->getPlayer();
         $level = $player->getLevel();
-        
-        if($packet instanceof LevelChunkPacket){
-            $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($packet, $player, $level): void{
-                $blocks = [];
-                for($x = $packet->getChunkX() << 4; $x < ($packet->getChunkX() + 1) << 4; ++$x){
-                    for($z = $packet->getChunkZ() << 4; $z < ($packet->getChunkZ() + 1) << 4; ++$z){
-                        for($y = 0; $y <= $level->getWorldHeight(); ++$y){
-                            $block = $level->getBlockAt($x, $y, $z, true, false);
-                            if($block instanceof Placeholder){
-                                $blocks[] = $block;
-                            }
-                        }
-                    }
-                }
-                if(count($blocks) > 0){
-                    $level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);
-                }
-            }), intdiv($player->getPing(), 50) +1);
-        }elseif($packet instanceof BatchPacket){
+        if($packet instanceof BatchPacket){
             foreach($packet->getPackets() as $buf){
                 $pk = PacketPool::getPacket($buf);
                 if($pk instanceof LevelChunkPacket){
                     $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
                         $blocks = [];
-                        for($x = $pk->getChunkX() << 4; $x < ($pk->getChunkX() + 1) << 4; ++$x){
-                            for($z = $pk->getChunkZ() << 4; $z < ($pk->getChunkZ() + 1) << 4; ++$z){
+                        for($x = (($pk->getChunkX() - (int)($pk->getChunkX() <= 0)) << 4) - (int)($pk->getChunkX() <= 0); $x < (($pk->getChunkX() + (int)($pk->getChunkX() > 0)) << 4) - (int)($pk->getChunkX() <= 0); ++$x){
+                            for($z = (($pk->getChunkZ() - (int)($pk->getChunkZ() <= 0)) << 4) - (int)($pk->getChunkZ() <= 0); $z < (($pk->getChunkZ() + (int)($pk->getChunkZ() > 0)) << 4) - (int)($pk->getChunkZ() <= 0); ++$z){
                                 for($y = 0; $y <= $level->getWorldHeight(); ++$y){
                                     $block = $level->getBlockAt($x, $y, $z, true, false);
                                     if($block instanceof Placeholder){
