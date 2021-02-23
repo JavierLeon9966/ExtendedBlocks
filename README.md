@@ -9,7 +9,7 @@ It checks when a LevelChunkPacket is sent so the block would be valid and visibl
 # How can I use it?
 For now you would need to use another plugin that register the blocks itself.
 
-For the blocks to be able to register correctly you must add `use JavierLeon9966\ExtendedBlocks\block\PlaceholderTrait;` in the block class.
+For the blocks to be able to register correctly you must add `use JavierLeon9966\ExtendedBlocks\block\PlaceholderTrait` in the block class.
 
 Soon I'll be able to add blocks in a config. But for now it's just like a API plugin.
 
