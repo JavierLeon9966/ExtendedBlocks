@@ -9,6 +9,9 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketSendEvent;
+use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\entity\EntityInventoryChangeEvent;
+use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, BatchPacket, PacketPool};
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
@@ -58,6 +61,44 @@ class Main extends PluginBase implements Listener{
     }
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+    }
+    /**
+     * @priority MONITOR
+     * @ignoreCancelled true
+     */
+    public function onEntityInventoryChange(EntityInventoryChangeEvent $event): void{
+        $item = $event->getNewItem();
+        if($item->getVanillaName() == 'Unknown' and ItemFactory::isRegistered($item->getId())){
+            $event->setNewItem(ItemFactory::get($item->getId(), $item->getDamage(), $item->getCount(), $item->getNamedTag()));
+        }
+    }
+    
+    /**
+     * @ignoreCancelled true
+     * @priority MONITOR
+     */
+    public function onInventoryTransaction(InventoryTransactionEvent $event){
+        foreach($event->getTransaction()->getActions() as $action){
+            $item = $action->getTargetItem();
+            if($item->getVanillaName() == 'Unknown' and ItemFactory::isRegistered($item->getId())){
+                $targetItem = new \ReflectionProperty($action, 'targetItem');
+                $targetItem->setAccessible(true);
+                $targetItem->setValue($action, ItemFactory::get($item->getId(), $item->getDamage(), $item->getCount(), $item->getNamedTag()));
+            }
+        }
+    }
+    /**
+     * @priority MONITOR
+     * @ignoreCancelled true
+     */
+    public function onPlayerLogin(PlayerLoginEvent $event): void{
+        $player = $event->getPlayer();
+        $player->getInventory()->setContents(array_map(static function(Item $item): Item{
+            if($item->getId() > 0){
+                return ItemFactory::get($item->getId(), $item->getDamage(), $item->getCount(), $item->getNamedTag());
+            }
+            return $item;
+        }, $player->getInventory()->getContents()));
     }
     /**
      * @priority MONITOR
