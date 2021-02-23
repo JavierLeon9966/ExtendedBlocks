@@ -7,6 +7,7 @@ use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
+use pocketmine\item\Item;
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\player\PlayerLoginEvent;
