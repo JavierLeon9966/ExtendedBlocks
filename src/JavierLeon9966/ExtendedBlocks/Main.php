@@ -116,8 +116,8 @@ class Main extends PluginBase implements Listener{
                     $pk->decode();
                     $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
                         $blocks = [];
-                        for($x = (($pk->getChunkX() - (int)($pk->getChunkX() <= 0)) << 4) - (int)($pk->getChunkX() <= 0); $x < (($pk->getChunkX() + (int)($pk->getChunkX() > 0)) << 4) - (int)($pk->getChunkX() <= 0); ++$x){
-                            for($z = (($pk->getChunkZ() - (int)($pk->getChunkZ() <= 0)) << 4) - (int)($pk->getChunkZ() <= 0); $z < (($pk->getChunkZ() + (int)($pk->getChunkZ() > 0)) << 4) - (int)($pk->getChunkZ() <= 0); ++$z){
+                        for($x = $pk->getChunkX() << 4; $x < ($pk->getChunkX() << 4) + 16; ++$x){
+                            for($z = $pk->getChunkZ() << 4; $z < ($pk->getChunkZ() << 4) + 16; ++$z){
                                 for($y = 0; $y <= $level->getWorldHeight(); ++$y){
                                     $block = $level->getBlockAt($x, $y, $z, true, false);
                                     if($block instanceof Placeholder){
