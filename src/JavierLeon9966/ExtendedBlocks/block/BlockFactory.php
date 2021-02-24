@@ -13,7 +13,7 @@ class BlockFactory extends PMFactory{
         self::$lightFilter->setSize(1024);
         self::$diffusesSkyLight->setSize(1024);
         self::$blastResistance->setSize(1024);
-        
+        self::registerBlock(new Placeholder);
         for($id = 0, $size = self::getBlockStatesArray()->getSize() >> 4; $id < $size; ++$id){
 			if(!self::getBlockStatesArray()[$id << 4]){
 				self::registerBlock(new UnknownBlock($id));
