@@ -113,6 +113,7 @@ class Main extends PluginBase implements Listener{
             foreach($packet->getPackets() as $buf){
                 $pk = PacketPool::getPacket($buf);
                 if($pk instanceof LevelChunkPacket){
+                    $pk->decode();
                     $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
                         $blocks = [];
                         for($x = (($pk->getChunkX() - (int)($pk->getChunkX() <= 0)) << 4) - (int)($pk->getChunkX() <= 0); $x < (($pk->getChunkX() + (int)($pk->getChunkX() > 0)) << 4) - (int)($pk->getChunkX() <= 0); ++$x){
