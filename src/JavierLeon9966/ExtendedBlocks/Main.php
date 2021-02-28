@@ -110,10 +110,14 @@ class Main extends PluginBase implements Listener{
         $player = $event->getPlayer();
         $level = $player->getLevel();
         if($packet instanceof BatchPacket){
+        	$packet->decode();
             foreach($packet->getPackets() as $buf){
                 $pk = PacketPool::getPacket($buf);
+                if(!$pk->canBeBatched()){
+                	throw new \UnexpectedValueException("Received invalid " . get_class($pk) . " inside BatchPacket");
+                }
+                $pk->decode();
                 if($pk instanceof LevelChunkPacket){
-                    $pk->decode();
                     $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
                         $blocks = [];
                         for($x = $pk->getChunkX() << 4; $x < ($pk->getChunkX() << 4) + 16; ++$x){

@@ -1,5 +1,5 @@
 # ExtendedBlocks
-This plugin adds the compatibility to add more blocks above the 255 ID in Pocketmine API 3
+This plugin adds the compatibility to add more blocks above the 255 ID in Pocketmine API 3.0.0+
 
 # How it works?
 This plugin uses a Tile Entity which saves the registered blocks from another plugin (Soon config) and a Placeholder block which replaces the Reserved6 that makes instance with the block you want that uses PlaceholderTrait and gives info to the server.
