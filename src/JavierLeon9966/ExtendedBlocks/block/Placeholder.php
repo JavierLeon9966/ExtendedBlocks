@@ -4,18 +4,16 @@ namespace JavierLeon9966\ExtendedBlocks\block;
 use pocketmine\tile\Tile;
 use pocketmine\item\Item;
 use pocketmine\entity\Entity;
-use pocketmine\block\Block;
-use pocketmine\block\Reserved6;
+use pocketmine\block\{Block, Reserved6};
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\nbt\tag\{CompoundTag, ShortTag, ByteTag};
 use JavierLeon9966\ExtendedBlocks\tile\{Placeholder as PTile, PlaceholderInterface};
-class Placeholder extends Block{
-    protected $tile = null;
-    private static $blocks = [];
+final class Placeholder extends Block{
+	private $default = null;
     public function __construct(Block $block = null, Tile $tile = null){
-        self::$blocks[] = $block = $block ?? new Reserved6(255, 0, "Reserved6");
+    	$block = $block ?? new Reserved6(Block::RESERVED6, 0, 'reserved6');
         parent::__construct(255, $block->getDamage(), $block->getName(), $block->getItemId());
         if($block->isValid()){
             $this->position($block);
@@ -25,7 +23,8 @@ class Placeholder extends Block{
                     new ShortTag("id", $block->getId()),
                     new ByteTag("meta", $block->getDamage())
                 ]));
-                $tile = Tile::createTile("Placeholder", $this->getLevel(), $nbt);
+                Tile::createTile("Placeholder", $this->getLevel(), $nbt);
+                return;
             }
             assert($tile instanceof PlaceholderInterface);
             $nbt = $tile->getCleanedNBT();
@@ -36,24 +35,30 @@ class Placeholder extends Block{
             $readSaveData = new \ReflectionMethod($tile, 'readSaveData');
             $readSaveData->setAccessible(true);
             $readSaveData->invoke($tile, $nbt);
-            $this->tile = $tile;
         }
     }
-    public function checkTile(): void{
-        if($this->tile === null){
-            if($this->isValid()){
-                if(($tile = $this->getLevel()->getTile($this)) instanceof PlaceholderInterface){
-                    $this->tile = $tile;
-                }
-            }
-        }
+    private function getDefault(): Block{
+    	if($this->default === null){
+    		$this->default = new Reserved6(Block::RESERVED6, 0, 'reserved6');
+    	}
+    	if($this->isValid() and !$this->default->isValid()){
+    		$this->default->position($this);
+    	}
+    	return $this->default;
     }
     public function getBlock(): Block{
-        $this->checkTile();
-        if(!$this->tile){
-            return new Reserved6(255, 0, "Reserved6");
+    	if($this->isValid()){
+        	$tile = $this->getLevel()->getTile($this);
+        	if(!$tile instanceof PlaceholderInterface){
+        		$tile = Tile::createTile("Placeholder", $this->getLevel(), PTile::createNBT($this));
+        		if(!$tile instanceof PlaceholderInterface){
+        			return $this->getDefault();
+        		}
+        	}
+        	return $tile->getBlock(true);
         }
-        return $this->tile->getBlock(true);
+        return $this->getDefault();
+        
     }
     public function getName(): string{
         return $this->getBlock()->getName();
@@ -92,12 +97,11 @@ class Placeholder extends Block{
 		return true;
 	}
 	public function onRandomTick() : void{
-	    foreach(self::$blocks as $block){
-	        if($block->isValid()){
-	            if($block->getLevel()->getBlock($block) instanceof $this){
-	                if($block->ticksRandomly()){
-	                    $block->onRandomTick();
-	                }
+	    foreach($this->getLevelNonNull()->getTiles() as $tile){
+	        if($tile instanceof PlaceholderInterface){
+	        	$block = $tile->getBlock(true);
+	            if($block->ticksRandomly()){
+	                $block->onRandomTick();
 	            }
 	        }
 	    }
@@ -110,13 +114,16 @@ class Placeholder extends Block{
 	}
 	//TODO
     public function getBlastResistance(): float{
-        return 18000000;
+        return 18000000.0;
     }
 	public function getFrictionFactor() : float{
 		return $this->getBlock()->getFrictionFactor();
 	}
 	public function isTransparent() : bool{
-	    return true;
+	    return $this->getBlock()->isTransparent();
+	}
+	public function isSolid(): bool{
+		return $this->getBlock()->isSolid();
 	}
 	public function canBeFlowedInto() : bool{
 		return $this->getBlock()->canBeFlowedInto();
@@ -157,6 +164,9 @@ class Placeholder extends Block{
 	public function burnsForever() : bool{
 		return $this->getBlock()->burnsForever();
 	}
+	public function isFlammable() : bool{
+		return $this->getBlock()->isFlammable();
+	}
 	public function onIncinerate() : void{
 	    $this->getBlock()->onIncinerate();
 	}
@@ -169,7 +179,6 @@ class Placeholder extends Block{
 	public function getCollisionBoxes() : array{
 	    return $this->getBlock()->getCollisionBoxes();
 	}
-
 	public function getBoundingBox() : ?AxisAlignedBB{
 	    return $this->getBlock()->getBoundingBox();
 	}

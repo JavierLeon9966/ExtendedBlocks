@@ -4,10 +4,9 @@ namespace JavierLeon9966\ExtendedBlocks;
 
 use pocketmine\Server;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\utils\SingletonTrait;
 use pocketmine\plugin\PluginBase;
 use pocketmine\tile\Tile;
-use pocketmine\item\Item;
+use pocketmine\item\{Item, ItemBlock};
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\player\PlayerLoginEvent;
@@ -15,26 +14,30 @@ use pocketmine\event\entity\EntityInventoryChangeEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, BatchPacket, PacketPool};
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use const pocketmine\RESOURCE_PATH;
 
 use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder};
 use JavierLeon9966\ExtendedBlocks\item\ItemFactory;
 use JavierLeon9966\ExtendedBlocks\tile\Placeholder as PTile;
 class Main extends PluginBase implements Listener{
-    use SingletonTrait;
-    private static $registered = false;
-    //Allow blocks above lit_blast_furnace to be visible and be valid
+    
+    /**
+     * Force registration of the missing runtime ID.
+     *
+     * if the data or Minecraft is updated, this may require modification.
+     * Also, this is not the correct way to do this, as it is forcibly added using reflection classes.
+     *
+     * Credits to: PresentKim
+     */
     private static function registerRuntimeIds(): void{
-        if(self::$registered) return;
-        self::$registered = true;
-        
-        $nameToLegacyMap = json_decode(file_get_contents(Server::getInstance()->getResourcePath()."vanilla/block_id_map.json"), true);
+        $nameToLegacyMap = json_decode(file_get_contents(RESOURCE_PATH."vanilla/block_id_map.json"), true);
         $metaMap = [];
 
-        /** @see RuntimeBlockMapping::getBedrockKnownStates() */
         foreach(RuntimeBlockMapping::getBedrockKnownStates() as $runtimeId => $state){
             $name = $state->getString("name");
-            if(!isset($nameToLegacyMap[$name]))
-                continue;
+            if(!isset($nameToLegacyMap[$name])){
+            	continue;
+            }
 
             $legacyId = $nameToLegacyMap[$name];
             if(!isset($metaMap[$legacyId])){
@@ -42,8 +45,9 @@ class Main extends PluginBase implements Listener{
             }
 
             $meta = $metaMap[$legacyId]++;
-            if($meta > 0xf)
-                continue;
+            if($meta > 15){
+            	continue;
+            }
 
             /** @see RuntimeBlockMapping::registerMapping() */
             $registerMapping = new \ReflectionMethod(RuntimeBlockMapping::class, 'registerMapping');
@@ -53,8 +57,6 @@ class Main extends PluginBase implements Listener{
         
     }
     public function onLoad(){
-        self::setInstance($this);
-        
         self::registerRuntimeIds();
         Tile::registerTile(PTile::class);
         BlockFactory::init();
@@ -63,6 +65,7 @@ class Main extends PluginBase implements Listener{
     public function onEnable(){
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
+    
     /**
      * @priority MONITOR
      * @ignoreCancelled true
@@ -75,8 +78,8 @@ class Main extends PluginBase implements Listener{
     }
     
     /**
-     * @ignoreCancelled true
      * @priority MONITOR
+     * @ignoreCancelled true
      */
     public function onInventoryTransaction(InventoryTransactionEvent $event){
         foreach($event->getTransaction()->getActions() as $action){
@@ -116,19 +119,19 @@ class Main extends PluginBase implements Listener{
                 if(!$pk->canBeBatched()){
                 	throw new \UnexpectedValueException("Received invalid " . get_class($pk) . " inside BatchPacket");
                 }
-                $pk->decode();
                 if($pk instanceof LevelChunkPacket){
-                    $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player, $level): void{
+                	$pk->decode();
+                    $this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player): void{
+                    	if(!$player->isOnline()){
+                    		return;
+                    	}
                         $blocks = [];
-                        for($x = $pk->getChunkX() << 4; $x < ($pk->getChunkX() << 4) + 16; ++$x){
-                            for($z = $pk->getChunkZ() << 4; $z < ($pk->getChunkZ() << 4) + 16; ++$z){
-                                for($y = 0; $y <= $level->getWorldHeight(); ++$y){
-                                    $block = $level->getBlockAt($x, $y, $z, true, false);
-                                    if($block instanceof Placeholder){
-                                        $blocks[] = $block;
-                                    }
-                                }
-                            }
+                        $level = $player->getLevelNonNull();
+                        foreach($level->getChunkTiles($pk->getChunkX(), $pk->getChunkZ()) as $tile){
+                        	$block = $tile->getBlock();
+                        	if($block instanceof Placeholder){
+                        		$blocks[] = $block->getBlock();
+                        	}
                         }
                         if(count($blocks) > 0){
                             $level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);

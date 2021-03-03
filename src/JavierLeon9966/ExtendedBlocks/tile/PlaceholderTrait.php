@@ -2,17 +2,21 @@
 declare(strict_types = 1);
 namespace JavierLeon9966\ExtendedBlocks\tile;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\Reserved6;
-use pocketmine\block\Block;
+use pocketmine\block\{Block, Reserved6};
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\{ByteTag, ShortTag};
+use JavierLeon9966\ExtendedBlocks\block\Placeholder;
 trait PlaceholderTrait{
     protected $block = null;
 	protected function loadBlock(CompoundTag $nbt): void{
 	    $block = $nbt->getCompoundTag("Block");
 	    if($block !== null){
-	        $this->block = BlockFactory::get($block->getShort("id"), $block->getByte("meta"), $this);
+	        $this->block = BlockFactory::get($block->getShort("id"), $block->getByte("meta"));
+	        if($this->block instanceof Placeholder){
+	        	$this->block = new Reserved6(Block::RESERVED6, 0, 'reserved6');
+	        }
 	    }
+	    $this->getBlock(true)->position($this);
 	}
 	protected function saveBlock(CompoundTag $nbt): void{
 	    $block = $this->getBlock(true);
@@ -30,8 +34,10 @@ trait PlaceholderTrait{
 	    }
 	    return $tag;
 	}
-	public function getBlock(bool $real = false): Block{
-	    if(!$real) return parent::getBlock();
-	    return $this->block ?? new Reserved6(255, 0, "Reserved6");
+	public function getBlock(bool $extended = false): Block{
+	    if(!$extended){
+	    	return parent::getBlock();
+	    }
+	    return $this->block = $this->block ?? new Reserved6(Block::RESERVED6, 0, 'reserved6');
 	}
 }
