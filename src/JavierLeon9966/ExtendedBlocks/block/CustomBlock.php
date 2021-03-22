@@ -104,7 +104,7 @@ final class CustomBlock extends Block{
 				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
 				return true;
 			case 'slab':
-				if($face == Vector3::SIDE_DOWN or ($face != Vector3::SIDE_UP and $clickVector > 0.5)){
+				if($face == Vector3::SIDE_DOWN or ($face != Vector3::SIDE_UP and $clickVector->y > 0.5)){
 					$this->meta |= 0x01;
 				}
 				if($blockReplace instanceof Placeholder and $blockReplace->getBlock()->getId() == $this->id and $blockClicked->getVariant() != $this->getVariant()){
