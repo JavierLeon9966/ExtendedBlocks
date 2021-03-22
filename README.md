@@ -1,7 +1,10 @@
-# ExtendedBlocks
+# ExtendedBlocks [![Poggit-CI](https://poggit.pmmp.io/shield.dl/ExtendedBlocks)](https://poggit.pmmp.io/p/ExtendedBlocks)
 This plugin adds the compatibility to add more blocks above the 255 ID in Pocketmine API 3.0.0+
 
 **Warning**: If you remove this plugin after some blocks has been placed it may transform into a Reserved6 block and can't be reversible.
+Also this plugin is a temporary solution until PM 4 is fully released so don't except this to work or any updates.
+
+**Note**: This plugin may affect your server performance if too many blocks are in your world. Use this plugin at your own risk!
 
 To update this plugin safely you must stop your server and install the updated version, then you can start the server again.
 

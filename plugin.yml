@@ -1,5 +1,5 @@
 name: ExtendedBlocks
-version: 1.0.7
+version: 1.1.0
 api: 3.14.0
 mcpe-protocol: [407, 408, 419, 422, 428]
 description: Adds support to implements blocks with ID's 255+
