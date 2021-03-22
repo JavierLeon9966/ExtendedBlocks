@@ -14,7 +14,7 @@ final class Placeholder extends Block{
 	private $default = null;
 	public function __construct(Block $block = null, Tile $tile = null){
 		$block = $block ?? new Reserved6(Block::RESERVED6, 0, 'reserved6');
-		parent::__construct(255, $block->getDamage(), $block->getName(), $block->getItemId());
+		parent::__construct(255, $block->getDamage());
 		if($block->isValid()){
 			$this->position($block);
 			if($tile === null){
@@ -58,6 +58,12 @@ final class Placeholder extends Block{
 			return $tile->getBlock(true);
 		}
 		return $this->getDefault();
+	}
+	public function getName(): string{
+		return $this->getBlock()->getName();
+	}
+	public function getItemId(): int{
+		return $this->getBlock()->getItemId();
 	}
 	public function getRuntimeId(): int{
 		return $this->getBlock()->getRuntimeId();
@@ -113,7 +119,7 @@ final class Placeholder extends Block{
 	}
 	//TODO
 	public function getBlastResistance(): float{
-		return 18000000.0;
+		return 18000000;
 	}
 	public function getFrictionFactor(): float{
 		return $this->getBlock()->getFrictionFactor();
@@ -142,7 +148,7 @@ final class Placeholder extends Block{
 	public function canPassThrough(): bool{
 		return $this->getBlock()->canPassThrough();
 	}
-	public function canClimb() : bool{
+	public function canClimb(): bool{
 		return $this->getBlock()->canClimb();
 	}
 	public function addVelocityToEntity(Entity $entity, Vector3 $vector): void{

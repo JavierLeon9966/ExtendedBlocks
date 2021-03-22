@@ -16,7 +16,7 @@ use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, Batch
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use const pocketmine\RESOURCE_PATH;
 
-use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder};
+use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder, CustomBlock, NetheriteBlock};
 use JavierLeon9966\ExtendedBlocks\item\ItemFactory;
 use JavierLeon9966\ExtendedBlocks\tile\Placeholder as PTile;
 class Main extends PluginBase implements Listener{
@@ -54,13 +54,46 @@ class Main extends PluginBase implements Listener{
 			$registerMapping->setAccessible(true);
 			$registerMapping->invoke(null, $runtimeId, $legacyId, $meta);
 		}
-		
 	}
 	public function onLoad(){
 		self::registerRuntimeIds();
 		Tile::registerTile(PTile::class);
-		BlockFactory::init();
 		ItemFactory::init();
+		BlockFactory::init();
+		foreach($this->getConfig()->getAll() as $name => $block){
+			BlockFactory::registerBlock(new CustomBlock(
+				strval($name),
+				intval($block['id']),
+				intval($block['meta'] ?? 0),
+				intval($block['itemId'] ?? 255 - $block['id']),
+				intval($block['variantBitmask'] ?? -1),
+				(bool)($block['isReplaceable'] ?? false),
+				(bool)($block['breakable'] ?? true),
+				intval($block['toolType'] ?? 0),
+				intval($block['toolHarvestLevel'] ?? 0),
+				(float)($block['hardness'] ?? 10),
+				(float)($block['frictionFactor'] ?? 0.6),
+				(bool)($block['transparent'] ?? false),
+				(bool)($block['solid'] ?? true),
+				(bool)($block['isFlowable'] ?? false),
+				(bool)($block['entityCollision'] ?? true),
+				(bool)($block['passThrough'] ?? false),
+				(bool)($block['canClimb'] ?? false),
+				(array)($block['drops'] ?? [[]]),
+				(array)($block['xpDrop'] ?? [0, 0]),
+				(bool)($block['silkTouch'] ?? true),
+				intval($block['fuelTime'] ?? 0),
+				intval($block['flameEncouragement'] ?? 0),
+				intval($block['flammibility'] ?? 0),
+				(bool)($block['burnsForever'] ?? false),
+				strval($block['type'] ?? 'normal')
+			));
+			if($block['creativeItem'] ?? true){
+				ItemFactory::addCreativeItem(ItemFactory::get(intval($block['itemId'] ?? 255 - $block['id'])));
+			}
+		}
+		BlockFactory::registerBlock(new NetheriteBlock);
+		ItemFactory::addCreativeItem(ItemFactory::get(255 - 525));
 	}
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -113,31 +146,23 @@ class Main extends PluginBase implements Listener{
 		$player = $event->getPlayer();
 		$level = $player->getLevel();
 		if($packet instanceof BatchPacket){
+			$blocks = [];
 			$packet->decode();
 			foreach($packet->getPackets() as $buf){
 				$pk = PacketPool::getPacket($buf);
-				if(!$pk->canBeBatched()){
-					throw new \UnexpectedValueException("Received invalid " . get_class($pk) . " inside BatchPacket");
-				}
 				if($pk instanceof LevelChunkPacket){
 					$pk->decode();
-					$this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($pk, $player): void{
-						if(!$player->isOnline()){
-							return;
+					foreach($level->getChunkTiles($pk->getChunkX(), $pk->getChunkZ()) as $tile){
+						if($tile->getBlock() instanceof Placeholder){
+							$blocks[] = $tile->getBlock(true);
 						}
-						$blocks = [];
-						$level = $player->getLevelNonNull();
-						foreach($level->getChunkTiles($pk->getChunkX(), $pk->getChunkZ()) as $tile){
-							$block = $tile->getBlock();
-							if($block instanceof Placeholder){
-								$blocks[] = $block->getBlock();
-							}
-						}
-						if(count($blocks) > 0){
-							$level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);
-						}
-					}), intdiv($player->getPing(), 50) +1);
+					}
 				}
+			}
+			if(count($blocks) > 0){
+				$this->getScheduler()->scheduleDelayedTask(new ClosureTask(static function() use($blocks, $player, $level): void{
+					$level->sendBlocks([$player], $blocks, UpdateBlockPacket::FLAG_ALL_PRIORITY);
+				}), intdiv($player->getPing(), 50) + 1);
 			}
 		}
 	}

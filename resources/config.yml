@@ -1,0 +1,27 @@
+---
+"Ancient Debris": #Required The name of the block
+    id: 526 #Required
+    hardness: 30 #Optional
+    toolType: 5 #Optional 0-32 (More info at BlockToolType interface)
+    toolHarvestLevel: 5 #Optional 1-6 (1: Wood, 2: Gold, 3: Stone, 4: Iron, 5: Diamond, 6: Netherite)
+    drops: [526] #Optional [526, ..] or [[id: 526, meta: 0], ..]
+    xpDrops: [0, 0] #Optional
+    itemId: -271 #Optional The item form of this block
+    variantBitmask: 0 #Optional The meta which the item is allowed
+    isReplaceable: false #Optional If the block can be replaced with any other
+    breakable: true #Optional If can be broken (Eg: Barrier, Command Block, Bedrock, etc.)
+    frictionFactor: 0.6 #Optional How much is the block slippery (Eg: Blue Ice), Note: This won't affect client side
+    transparent: false #Optional
+    solid: true #Optional
+    isFlowable: false #Optional If liquids can destroy this block
+    entityCollision: true #Optional If server entities can collide with this block
+    passThrough: false #Optional If server entities can pass through this block (Eg: Ladder, Vines, etc.)
+    canClimb: false #Optional Note: Doesn't affect client side
+    silkTouch: true #Optional If silk touch works with this block
+    fuelTime: 0 #Optional How much time in ticks it consumes fuel in a furnace
+    flameEncouragement: 0 #Optional Chance of this block getting caught in fire
+    flammibility: 0 #Optional Chance of this block burning out
+    burnsForever: false #Optional If fire stays forever in this block
+    type: 'normal' #Optional normal, stair, trapdoor, wall, fence, fence gate, slab (Won't spawn a double slab, you have to register it)
+    creativeItem: true #Optional If this block should appear in the creative menu
+...
