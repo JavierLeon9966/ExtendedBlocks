@@ -92,7 +92,7 @@ class Main extends PluginBase implements Listener{
 				ItemFactory::addCreativeItem(ItemFactory::get(intval($block['itemId'] ?? 255 - $block['id'])));
 			}
 		}
-		BlockFactory::registerBlock(new NetheriteBlock);
+		BlockFactory::registerBlock(new NetheriteBlock), true);
 		ItemFactory::addCreativeItem(ItemFactory::get(255 - 525));
 	}
 	public function onEnable(){
