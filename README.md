@@ -9,7 +9,7 @@ Also this plugin is a temporary solution until PM 4 is fully released so don't e
 To update this plugin safely you must stop your server and install the updated version, then you can start the server again.
 
 ## How the plugins works
-This plugin uses a Tile Entity which saves the registered blocks from another plugin (Soon config) and a Placeholder block which replaces the Reserved6 that makes instance with the block you want that uses PlaceholderTrait and gives info to the server.
+This plugin uses a Tile Entity which saves the registered blocks from another plugin and a Placeholder block which replaces the Reserved6 that makes instance with the block you want that uses PlaceholderTrait and gives info to the server.
 
 It checks when a LevelChunkPacket is sent and finds every tile within the chunk that is a Placeholder block and sends the block to the player.
 
