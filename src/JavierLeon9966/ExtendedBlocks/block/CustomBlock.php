@@ -210,7 +210,7 @@ final class CustomBlock extends Block{
 			if(!is_array($item)){
 				$item = ['id' => $item];
 			}
-			return ItemFactory::get(intval($item['id'] ?? $this->getItemId()), intval($item['meta'] ?? 0));
+			return ItemFactory::get((int)($item['id'] ?? $this->getItemId()), (int)($item['meta'] ?? 0));
 		}, $this->drops);
 	}
 	protected function getXpDropAmount(): int{

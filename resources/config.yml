@@ -4,7 +4,7 @@
     hardness: 30 #Optional
     toolType: 5 #Optional 0-32 (More info at BlockToolType interface)
     toolHarvestLevel: 5 #Optional 1-6 (1: Wood, 2: Gold, 3: Stone, 4: Iron, 5: Diamond, 6: Netherite)
-    drops: [526] #Optional [526, ..] or [[id: 526, meta: 0], ..]
+    drops: [-271] #Optional [-271, ..] or [[id: -271, meta: 0], ..] Must be the same as itemId if you want to drop the block itself
     xpDrops: [0, 0] #Optional
     itemId: -271 #Optional The item form of this block
     variantBitmask: 0 #Optional The meta which the item is allowed

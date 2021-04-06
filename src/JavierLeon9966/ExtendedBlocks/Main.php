@@ -62,15 +62,15 @@ class Main extends PluginBase implements Listener{
 		BlockFactory::init();
 		foreach($this->getConfig()->getAll() as $name => $block){
 			BlockFactory::registerBlock(new CustomBlock(
-				strval($name),
-				intval($block['id']),
-				intval($block['meta'] ?? 0),
-				intval($block['itemId'] ?? 255 - $block['id']),
-				intval($block['variantBitmask'] ?? -1),
+				"$name",
+				(int)$block['id'],
+				(int)($block['meta'] ?? 0),
+				(int)($block['itemId'] ?? 255 - $block['id']),
+				(int)($block['variantBitmask'] ?? -1),
 				(bool)($block['isReplaceable'] ?? false),
 				(bool)($block['breakable'] ?? true),
-				intval($block['toolType'] ?? 0),
-				intval($block['toolHarvestLevel'] ?? 0),
+				(int)($block['toolType'] ?? 0),
+				(int)($block['toolHarvestLevel'] ?? 0),
 				(float)($block['hardness'] ?? 10),
 				(float)($block['frictionFactor'] ?? 0.6),
 				(bool)($block['transparent'] ?? false),
@@ -82,11 +82,11 @@ class Main extends PluginBase implements Listener{
 				(array)($block['drops'] ?? [[]]),
 				(array)($block['xpDrop'] ?? [0, 0]),
 				(bool)($block['silkTouch'] ?? true),
-				intval($block['fuelTime'] ?? 0),
-				intval($block['flameEncouragement'] ?? 0),
-				intval($block['flammibility'] ?? 0),
+				(int)($block['fuelTime'] ?? 0),
+				(int)($block['flameEncouragement'] ?? 0),
+				(int)($block['flammibility'] ?? 0),
 				(bool)($block['burnsForever'] ?? false),
-				strval($block['type'] ?? 'normal')
+				(string)($block['type'] ?? 'normal')
 			));
 			if($block['creativeItem'] ?? true){
 				ItemFactory::addCreativeItem(ItemFactory::get(intval($block['itemId'] ?? 255 - $block['id'])));
