@@ -2,21 +2,22 @@
 declare(strict_types = 1);
 namespace JavierLeon9966\ExtendedBlocks;
 
-use pocketmine\Server;
-use pocketmine\scheduler\ClosureTask;
-use pocketmine\plugin\PluginBase;
-use pocketmine\tile\Tile;
-use pocketmine\item\{Item, ItemBlock};
+use pocketmine\event\entity\EntityInventoryChangeEvent;
+use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\player\PlayerLoginEvent;
-use pocketmine\event\entity\EntityInventoryChangeEvent;
-use pocketmine\event\inventory\InventoryTransactionEvent;
-use pocketmine\network\mcpe\protocol\{LevelChunkPacket, UpdateBlockPacket, BatchPacket, PacketPool};
+use pocketmine\item\{Item, ItemBlock};
+use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\Server;
+use pocketmine\tile\Tile;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use pocketmine\network\mcpe\protocol\{BatchPacket, PacketPool, LevelChunkPacket, UpdateBlockPacket};
+use pocketmine\network\mcpe\NetworkBinaryStream;
 use const pocketmine\RESOURCE_PATH;
 
-use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, Placeholder, CustomBlock, NetheriteBlock};
+use JavierLeon9966\ExtendedBlocks\block\{BlockFactory, CustomBlock, Placeholder, NetheriteBlock};
 use JavierLeon9966\ExtendedBlocks\item\ItemFactory;
 use JavierLeon9966\ExtendedBlocks\tile\Placeholder as PTile;
 class Main extends PluginBase implements Listener{
@@ -137,6 +138,12 @@ class Main extends PluginBase implements Listener{
 			return $item;
 		}, $player->getInventory()->getContents()));
 	}
+	private static function getPackets(BatchPacket $packet): \Generator{
+		$stream = new NetworkBinaryStream($packet->payload);
+		while(!$stream->feof()){
+			yield $stream->getString();
+		}
+	}
 	/**
 	 * @priority MONITOR
 	 * @ignoreCancelled true
@@ -148,7 +155,7 @@ class Main extends PluginBase implements Listener{
 		if($packet instanceof BatchPacket){
 			$blocks = [];
 			$packet->decode();
-			foreach($packet->getPackets() as $buf){
+			foreach(self::getPackets($packet) as $buf){
 				$pk = PacketPool::getPacket($buf);
 				if($pk instanceof LevelChunkPacket){
 					$pk->decode();
