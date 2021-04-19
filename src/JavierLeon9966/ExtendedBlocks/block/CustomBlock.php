@@ -1,6 +1,6 @@
 <?php
 namespace JavierLeon9966\ExtendedBlocks\block;
-use pocketmine\block\{Block, CobblestoneWall, Fence, FanceGate, Trapdoor};
+use pocketmine\block\{Block, CobblestoneWall, Fence, FanceGate, Trapdoor, Slab};
 use pocketmine\level\Position;
 use pocketmine\level\sound\DoorSound;
 use pocketmine\item\Item;
@@ -86,16 +86,22 @@ final class CustomBlock extends Block{
 			case 'stair':
 			case 'trapDoor':
 				return 0;
-			case 'fenceGate':
-			case 'wall':
-			case 'fence':
-			case 'normal':
-			default:
-				return $this->variantBitmask;
 		}
+		return $this->variantBitmask;
 	}
 	public function canBeReplaced(): bool{
 		return $this->isReplaceable;
+	}
+	public static function getSlabVariantBitmask(int $id): int{
+		switch($id){
+			case self::WOODEN_SLAB:
+			case self::STONE_SLAB:
+			case self::STONE_SLAB2:
+			case 417: //STONE_SLAB3
+			case 421: //STONE_SLAB4
+				return 0x07;
+		}
+		return 0;
 	}
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null): bool{
 		switch($this->type){
@@ -104,8 +110,9 @@ final class CustomBlock extends Block{
 				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
 				return true;
 			case 'slab':
+				$this->meta &= self::getSlabVariantBitmask($this->id);
 				if($face == Vector3::SIDE_DOWN or ($face != Vector3::SIDE_UP and $clickVector->y > 0.5)){
-					$this->meta |= 0x01;
+					$this->meta |= self::getSlabVariantBitmask($this->id) + 1;
 				}
 				if($blockReplace instanceof Placeholder and $blockReplace->getBlock()->getId() == $this->id and $blockClicked->getVariant() != $this->getVariant()){
 					return false;
@@ -140,12 +147,8 @@ final class CustomBlock extends Block{
 				}
 				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
 				return true;
-			case 'fence':
-			case 'wall':
-			case 'normal':
-			default:
-				return $this->getLevelNonNull()->setBlock($this, new Placeholder($this), true);
 		}
+		return $this->getLevelNonNull()->setBlock($this, new Placeholder($this), true);
 	}
 	public function isBreakable(Item $item): bool{
 		return $this->breakable;
@@ -172,14 +175,8 @@ final class CustomBlock extends Block{
 				$this->getLevelNonNull()->setBlock($this, new Placeholder($this), true);
 				$this->level->addSound(new DoorSound($this));
 				return true;
-			case 'stair':
-			case 'fence':
-			case 'slab':
-			case 'wall':
-			case 'normal':
-			default:
-				return false;
 		}
+		return false;
 	}
 	public function getHardness(): float{
 		return $this->hardness;
@@ -214,7 +211,7 @@ final class CustomBlock extends Block{
 		}, $this->drops);
 	}
 	protected function getXpDropAmount(): int{
-		return mt_rand(intval(@$this->xpDrop[0]), intval(@$this->xpDrop[1]));
+		return mt_rand((int)$this->xpDrop[0], (int)$this->xpDrop[1]);
 	}
 	public function isAffectedBySilkTouch(): bool{
 		return $this->silkTouch;
@@ -237,57 +234,67 @@ final class CustomBlock extends Block{
 	protected function recalculateBoundingBox(): ?AxisAlignedBB{
 		switch($this->type){
 			case 'wall':
-				return (new class($this) extends CobblestoneWall{
-					public function __construct(Position $pos){
-						$this->position($pos);
-					}
+				$wall = new class extends CobblestoneWall{
 					public function canConnect(Block $block){
 						return $block instanceof Placeholder and ($custom = $block->getBlock()) instanceof CustomBlock and $custom->getType() == 'wall' or parent::canConnect($block);
 					}
-				})->getBoundingBox();
+				};
+				$wall->position($this);
+				return $wall->getBoundingBox();
 			case 'fence':
-				return (new class($this) extends Fence{
-					public function __construct(Position $pos){
-						$this->position($pos);
-					}
+				$fence = new class extends Fence{
 					public function canConnect(Block $block){
 						return $block instanceof Placeholder and ($custom = $block->getBlock()) instanceof CustomBlock and $custom->getType() == 'fence' or parent::canConnect($block);
 					}
-				})->getBoundingBox();
+				};
+				$fence->position($this);
+				return $fence->getBoundingBox();
 			case 'fenceGate':
-				return BlockFactory::get(self::OAK_FENCE_GATE, $this->getDamage(), $this)->getBoundingBox();
-			case 'slab':
-				return BlockFactory::get(self::STONE_SLAB, $this->getDamage(), $this)->getBoundingBox();
+				return BlockFactory::get(self::OAK_FENCE_GATE, $this->meta, $this)->getBoundingBox();
 			case 'trapDoor':
-				return BlockFactory::get(self::TRAPDOOR, $this->getDamage(), $this)->getBoundingBox();
-			case 'stair':
-			case 'slab':
-			case 'wall':
-			case 'normal':
-			default:
-				return parent::recalculateBoundingBox();
+				return BlockFactory::get(self::TRAPDOOR, $this->meta, $this)->getBoundingBox();
 		}
+		return parent::recalculateBoundingBox();
 	}
 	protected function recalculateCollisionBoxes(): array{
 		switch($this->type){
 			case 'fence':
-				return (new class($this) extends Fence{
-					public function __construct(Position $pos){
-						$this->position($pos);
-					}
+				$fence = new class extends Fence{
 					public function canConnect(Block $block){
 						return $block instanceof Placeholder and ($custom = $block->getBlock()) instanceof CustomBlock and $custom->getType() == 'fence' or parent::canConnect($block);
 					}
-				})->getCollisionBoxes();
-			case 'stair':
-				return BlockFactory::get(self::OAK_STAIRS, $this->getDamage(), $this)->getCollisionBoxes();
-			case 'trapDoor':
-			case 'fenceGate':
+				};
+				$fence->position($this);
+				return $fence->getCollisionBoxes();
 			case 'slab':
-			case 'wall':
-			case 'normal':
-			default:
-				return parent::recalculateCollisionBoxes();
+				$slab = new class($this->meta) extends Slab{
+					protected function recalculateBoundingBox(): ?AxisAlignedBB{
+						if(($this->meta & (CustomBlock::getSlabVariantBitmask($this->id) + 1)) > 0){
+							return new AxisAlignedBB(
+								$this->x,
+								$this->y + 0.5,
+								$this->z,
+								$this->x + 1,
+								$this->y + 1,
+								$this->z + 1
+							);
+						}else{
+							return new AxisAlignedBB(
+								$this->x,
+								$this->y,
+								$this->z,
+								$this->x + 1,
+								$this->y + 0.5,
+								$this->z + 1
+							);
+						}
+					}
+				};
+				$slab->position($this);
+				return $slab->getCollisionBoxes();
+			case 'stair':
+				return BlockFactory::get(self::OAK_STAIRS, $this->meta, $this)->getCollisionBoxes();
 		}
+		return parent::recalculateCollisionBoxes();
 	}
 }		
