@@ -268,6 +268,9 @@ final class CustomBlock extends Block{
 				return $fence->getCollisionBoxes();
 			case 'slab':
 				$slab = new class($this->meta) extends Slab{
+					public function getDoubleSlabId(): int{
+						return 0;
+					}
 					protected function recalculateBoundingBox(): ?AxisAlignedBB{
 						if(($this->meta & (CustomBlock::getSlabVariantBitmask($this->id) + 1)) > 0){
 							return new AxisAlignedBB(
