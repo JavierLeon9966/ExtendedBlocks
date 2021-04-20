@@ -1,6 +1,6 @@
 <?php
 namespace JavierLeon9966\ExtendedBlocks\block;
-use pocketmine\block\{Block, CobblestoneWall, Fence, FanceGate, Trapdoor, Slab};
+use pocketmine\block\{Block, CobblestoneWall, Fence, FanceGate, Trapdoor};
 use pocketmine\level\Position;
 use pocketmine\level\sound\DoorSound;
 use pocketmine\item\Item;
@@ -92,7 +92,7 @@ final class CustomBlock extends Block{
 	public function canBeReplaced(): bool{
 		return $this->isReplaceable;
 	}
-	public static function getSlabVariantBitmask(int $id): int{
+	private static function getSlabVariantBitmask(int $id): int{
 		switch($id){
 			case self::WOODEN_SLAB:
 			case self::STONE_SLAB:
@@ -107,8 +107,7 @@ final class CustomBlock extends Block{
 		switch($this->type){
 			case 'fenceGate':
 				$this->meta = ($player instanceof Player ? ($player->getDirection() - 1) & 0x03 : 0);
-				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
-				return true;
+				break;
 			case 'slab':
 				$this->meta &= self::getSlabVariantBitmask($this->id);
 				if($face == Vector3::SIDE_DOWN or ($face != Vector3::SIDE_UP and $clickVector->y > 0.5)){
@@ -117,8 +116,7 @@ final class CustomBlock extends Block{
 				if($blockReplace instanceof Placeholder and $blockReplace->getBlock()->getId() == $this->id and $blockClicked->getVariant() != $this->getVariant()){
 					return false;
 				}
-				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
-				return true;
+				break;
 			case 'stair':
 				$faces = [
 					0 => 0,
@@ -130,8 +128,7 @@ final class CustomBlock extends Block{
 				if(($clickVector->y > 0.5 and $face != Vector3::SIDE_UP) or $face == Vector3::SIDE_DOWN){
 					$this->meta |= 0x04; //Upside-down stairs
 				}
-				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
-				return true;
+				break;
 			case 'trapDoor':
 				$directions = [
 					0 => 1,
@@ -145,10 +142,8 @@ final class CustomBlock extends Block{
 				if(($clickVector->y > 0.5 and $face != self::SIDE_UP) or $face == self::SIDE_DOWN){
 					$this->meta |= Trapdoor::MASK_UPPER; //top half of block
 				}
-				$this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
-				return true;
 		}
-		return $this->getLevelNonNull()->setBlock($this, new Placeholder($this), true);
+		return $this->getLevelNonNull()->setBlock($blockReplace, new Placeholder($this), true);
 	}
 	public function isBreakable(Item $item): bool{
 		return $this->breakable;
@@ -267,34 +262,24 @@ final class CustomBlock extends Block{
 				$fence->position($this);
 				return $fence->getCollisionBoxes();
 			case 'slab':
-				$slab = new class($this->meta) extends Slab{
-					public function getDoubleSlabId(): int{
-						return 0;
-					}
-					protected function recalculateBoundingBox(): ?AxisAlignedBB{
-						if(($this->meta & (CustomBlock::getSlabVariantBitmask($this->id) + 1)) > 0){
-							return new AxisAlignedBB(
-								$this->x,
-								$this->y + 0.5,
-								$this->z,
-								$this->x + 1,
-								$this->y + 1,
-								$this->z + 1
-							);
-						}else{
-							return new AxisAlignedBB(
-								$this->x,
-								$this->y,
-								$this->z,
-								$this->x + 1,
-								$this->y + 0.5,
-								$this->z + 1
-							);
-						}
-					}
-				};
-				$slab->position($this);
-				return $slab->getCollisionBoxes();
+				if(($this->meta & (self::getSlabVariantBitmask($this->id) + 1)) > 0){
+					return new AxisAlignedBB(
+						$this->x,
+						$this->y + 0.5,
+						$this->z,
+						$this->x + 1,
+						$this->y + 1,
+						$this->z + 1
+					);
+				}
+				return new AxisAlignedBB(
+					$this->x,
+					$this->y,
+					$this->z,
+					$this->x + 1,
+					$this->y + 0.5,
+					$this->z + 1
+				);
 			case 'stair':
 				return BlockFactory::get(self::OAK_STAIRS, $this->meta, $this)->getCollisionBoxes();
 		}
