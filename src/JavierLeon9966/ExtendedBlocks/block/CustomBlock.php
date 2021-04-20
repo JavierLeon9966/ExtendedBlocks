@@ -244,23 +244,6 @@ final class CustomBlock extends Block{
 				};
 				$fence->position($this);
 				return $fence->getBoundingBox();
-			case 'fenceGate':
-				return BlockFactory::get(self::OAK_FENCE_GATE, $this->meta, $this)->getBoundingBox();
-			case 'trapDoor':
-				return BlockFactory::get(self::TRAPDOOR, $this->meta, $this)->getBoundingBox();
-		}
-		return parent::recalculateBoundingBox();
-	}
-	protected function recalculateCollisionBoxes(): array{
-		switch($this->type){
-			case 'fence':
-				$fence = new class extends Fence{
-					public function canConnect(Block $block){
-						return $block instanceof Placeholder and ($custom = $block->getBlock()) instanceof CustomBlock and $custom->getType() == 'fence' or parent::canConnect($block);
-					}
-				};
-				$fence->position($this);
-				return $fence->getCollisionBoxes();
 			case 'slab':
 				if(($this->meta & (self::getSlabVariantBitmask($this->id) + 1)) > 0){
 					return new AxisAlignedBB(
@@ -280,6 +263,23 @@ final class CustomBlock extends Block{
 					$this->y + 0.5,
 					$this->z + 1
 				);
+			case 'fenceGate':
+				return BlockFactory::get(self::OAK_FENCE_GATE, $this->meta, $this)->getBoundingBox();
+			case 'trapDoor':
+				return BlockFactory::get(self::TRAPDOOR, $this->meta, $this)->getBoundingBox();
+		}
+		return parent::recalculateBoundingBox();
+	}
+	protected function recalculateCollisionBoxes(): array{
+		switch($this->type){
+			case 'fence':
+				$fence = new class extends Fence{
+					public function canConnect(Block $block){
+						return $block instanceof Placeholder and ($custom = $block->getBlock()) instanceof CustomBlock and $custom->getType() == 'fence' or parent::canConnect($block);
+					}
+				};
+				$fence->position($this);
+				return $fence->getCollisionBoxes();
 			case 'stair':
 				return BlockFactory::get(self::OAK_STAIRS, $this->meta, $this)->getCollisionBoxes();
 		}
