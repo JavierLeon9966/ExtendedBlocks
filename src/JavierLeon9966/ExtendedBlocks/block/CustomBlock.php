@@ -98,8 +98,9 @@ final class CustomBlock extends Block{
 			case self::STONE_SLAB:
 			case self::STONE_SLAB2:
 			case 417: //STONE_SLAB3
-			case 421: //STONE_SLAB4
 				return 0x07;
+			case 421: //STONE_SLAB4
+				return 0x04;
 		}
 		return 0;
 	}
