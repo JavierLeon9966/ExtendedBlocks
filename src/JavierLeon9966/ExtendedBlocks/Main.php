@@ -41,7 +41,9 @@ class Main extends PluginBase implements Listener{
 			}
 
 			$legacyId = $nameToLegacyMap[$name];
-			if(!isset($metaMap[$legacyId])){
+			if($legacyId <= 469){
+				continue;
+			}elseif(!isset($metaMap[$legacyId])){
 				$metaMap[$legacyId] = 0;
 			}
 
