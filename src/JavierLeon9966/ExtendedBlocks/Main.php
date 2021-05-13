@@ -64,6 +64,10 @@ class Main extends PluginBase implements Listener{
 		ItemFactory::init();
 		BlockFactory::init();
 		foreach($this->getConfig()->getAll() as $name => $block){
+			$id = (int)$block['id'];
+			if(BlockFactory::isRegistered($id)){
+				$this->getLogger()->debug("Block with ID: $id is already registered");
+			}
 			BlockFactory::registerBlock(new CustomBlock(
 				"$name",
 				(int)$block['id'],
@@ -90,7 +94,7 @@ class Main extends PluginBase implements Listener{
 				(int)($block['flammibility'] ?? 0),
 				(bool)($block['burnsForever'] ?? false),
 				(string)($block['type'] ?? 'normal')
-			));
+			), true);
 			if($block['creativeItem'] ?? true){
 				ItemFactory::addCreativeItem(ItemFactory::get(intval($block['itemId'] ?? 255 - $block['id'])));
 			}
