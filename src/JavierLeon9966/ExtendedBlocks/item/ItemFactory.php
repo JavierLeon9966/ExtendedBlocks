@@ -58,7 +58,7 @@ class ItemFactory extends PMFactory{
 			}
 		}
 	}
-	final private static function jsonDeserialize(array $data): Item{
+	private static function jsonDeserialize(array $data): Item{
 		$nbt = "";
 
 		//Backwards compatibility
