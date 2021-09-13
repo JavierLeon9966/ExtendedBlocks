@@ -2,13 +2,14 @@
 declare(strict_types = 1);
 namespace JavierLeon9966\ExtendedBlocks;
 
+use pocketmine\block\tile\TileFactory;
 use pocketmine\event\Listener;
-use pocketmine\event\chunk\ChunkLoadEvent;
+use pocketmine\event\world\ChunkLoadEvent;
 use pocketmine\plugin\PluginBase;
-use pocketmine\tile\TileFactory;
 
 use JavierLeon9966\ExtendedBlocks\tile\{Placeholder as PTile, PlaceholderInterface};
-class Main extends PluginBase{
+class Main extends PluginBase implements Listener
+{
 	public function onLoad(): void{
 		TileFactory::getInstance()->register(PTile::class);
 	}
@@ -22,7 +23,7 @@ class Main extends PluginBase{
 	public function onChunkLoad(ChunkLoadEvent $event): void{
 		foreach($event->getChunk()->getTiles() as $tile){
 			if($tile instanceof PlaceholderInterface){
-				$event->getWorld()->setBlock($tile->getPos(), $tile->getBlock(true));
+				$event->getWorld()->setBlock($tile->getPosition(), $tile->getBlock(true));
 			}
 		}
 	}
