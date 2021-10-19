@@ -1,7 +1,7 @@
 name: ExtendedBlocks
-version: 1.2.0
+version: 1.3.0
 api: 3.14.0
-mcpe-protocol: [407, 408, 419, 422, 428, 431, 440, 448, 465]
+mcpe-protocol: [407, 408, 419, 422, 428, 431, 440, 448, 465, 471]
 description: Adds support to implements blocks with ID's 255+
 author: Javier Leon9966
 main: JavierLeon9966\ExtendedBlocks\Main
