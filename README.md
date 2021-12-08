@@ -1,6 +1,10 @@
 # ExtendedBlocks [![Poggit-CI](https://poggit.pmmp.io/shield.dl/ExtendedBlocks)](https://poggit.pmmp.io/p/ExtendedBlocks)
 This plugin adds the compatibility to add more blocks above the 255 ID in Pocketmine API 3.0.0+
 
+## Archived
+This repository is archived because PM4 has just released so this plugin is completely pointless. If you wish to convert these blocks into PM4 blocks you should use [ExtendedBlocksConverter](https://github.com/JavierLeon9966/ExtendedBlocksConverter)
+
+## Important
 **Warning**: If you remove this plugin after some blocks has been placed it may transform into a Reserved6 block and can't be reversible.
 Also this plugin is a temporary solution until PM 4 is fully released so don't except this to work or any updates.
 
